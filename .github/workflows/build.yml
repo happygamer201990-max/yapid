@@ -1,12 +1,22 @@
-name: Build Android APK
+name: Build and Deploy Flet Web
 
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
 
+# Даем права для публикации на GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  build:
+  build-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,16 +49,24 @@ jobs:
             echo 'main_module = "main"' >> flet.toml
           fi
 
-      - name: Build APK
+      - name: Build Web
         env:
           CI: "true"
         run: |
-          flet build apk
+          flet build web
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: app-release
-          path: |
-            build/apk/*.apk
-            build/flutter/build/app/outputs/flutter-apk/*.apk
+          path: 'build/web'
+
+  deploy-web:
+    needs: build-web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
