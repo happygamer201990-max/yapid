@@ -27,11 +27,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-
       - name: Create flet.toml if missing
         run: |
           if [ ! -f flet.toml ]; then
@@ -41,9 +36,10 @@ jobs:
 
       - name: Build APK
         env:
-          CI: "true"
+          CI: 'true'
+          FLET_NON_INTERACTIVE: 'true'
         run: |
-          flet build apk
+          printf 'y\ny\ny\n' | flet build apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
