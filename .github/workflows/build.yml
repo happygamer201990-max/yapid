@@ -30,11 +30,18 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          flutter-version: '3.44.8'
+
+      - name: Create flet.toml if missing
+        run: |
+          if [ ! -f flet.toml ]; then
+            echo 'app_name = "MyGame"' > flet.toml
+            echo 'main_module = "main"' >> flet.toml
+          fi
 
       - name: Build APK
         run: |
-          flet build apk
+          flet build apk --yes
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
